@@ -1,39 +1,31 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Modal } from './Modal/Modal';
 import './styles.css';
 
-class App extends Component {
-  state = {
-    showModal: false,
-    imageURL: '',
+export const App = () => {
+  const [showModal, setShowModal] = useState(false);
+  const [imageURL, setImageURL] = useState('');
+
+  const toggleModal = imageURL => {
+    setShowModal(!showModal);
+    setImageURL(imageURL);
+  };
+  const closeModal = () => {
+    setShowModal(false);
   };
 
-  toggleModal = imageURL => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-    this.setState({ imageURL: imageURL });
-  };
-  closeModal = () => {
-    this.setState({ showModal: false });
-  };
-
-  render() {
-    return (
-      <>
-        <ImageGallery toggleModal={this.toggleModal}></ImageGallery>
-        {this.state.showModal && (
-          <Modal closeModal={this.closeModal}>
-            <img width="700" height="500" src={this.state.imageURL} alt="" />
-          </Modal>
-        )}
-        <ToastContainer autoClose={2000} />
-      </>
-    );
-  }
-}
-
-export { App };
+  return (
+    <>
+      <ImageGallery toggleModal={toggleModal}></ImageGallery>
+      {showModal && (
+        <Modal closeModal={closeModal}>
+          <img width="700" height="500" src={imageURL} alt="" />
+        </Modal>
+      )}
+      <ToastContainer autoClose={2000} />
+    </>
+  );
+};

@@ -1,50 +1,44 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import searchBarStyles from '../Searchbar/Searchbar.module.css';
 import { FaSearch } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import PropTypes from 'prop-types';
 
-class Searchbar extends Component {
-  state = {
-    request: '',
+export const Searchbar = ({ handleSubmit }) => {
+  const [request, setRequest] = useState('');
+
+  const onHandleChange = e => {
+    setRequest(e.target.value.toLowerCase());
   };
 
-  onHandleChange = e => {
-    this.setState({ request: e.currentTarget.value.toLowerCase() });
-  };
-  onHandleSubmit = e => {
+  const onHandleSubmit = e => {
     e.preventDefault();
-    if (this.state.request.trim() === '') {
+    if (request.trim() === '') {
       toast.error('Please enter your search query');
       return;
     }
-    this.props.handleSubmit(this.state.request);
-    this.setState({ request: '' });
+    handleSubmit(request);
+    setRequest('');
   };
-  render() {
-    return (
-      <>
-        <form
-          onSubmit={this.onHandleSubmit}
-          className={searchBarStyles.SearchForm}
-        >
-          <input
-            type="text"
-            className={searchBarStyles.SearchForm_input}
-            value={this.state.request}
-            onChange={this.onHandleChange}
-            placeholder="Search images and photos"
-          />
-          <button className={searchBarStyles.button}>
-            <FaSearch />
-          </button>
-        </form>
-      </>
-    );
-  }
-}
+
+  return (
+    <>
+      <form onSubmit={onHandleSubmit} className={searchBarStyles.SearchForm}>
+        <input
+          type="text"
+          className={searchBarStyles.SearchForm_input}
+          value={request}
+          onChange={onHandleChange}
+          placeholder="Search images and photos"
+        />
+        <button className={searchBarStyles.button}>
+          <FaSearch />
+        </button>
+      </form>
+    </>
+  );
+};
 
 Searchbar.propTypes = {
   handleSubmit: PropTypes.func,
 };
-export { Searchbar };

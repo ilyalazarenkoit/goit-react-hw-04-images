@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import '../styles.css';
 import { Searchbar } from '../Searchbar/Searchbar';
 import { GalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
@@ -9,91 +9,77 @@ import { toast } from 'react-toastify';
 import { LoadMore } from 'components/Button/Button';
 import PropTypes from 'prop-types';
 
-class ImageGallery extends Component {
-  state = {
-    request: '',
-    error: null,
-    status: 'idle',
-    page: 1,
-    gallery: [],
-    searchKey: '',
-    showLoadMore: true,
-    showLoader: false,
+export const ImageGallery = ({ toggleModal }) => {
+  const [request, setRequest] = useState('');
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('idle');
+  const [page, setPage] = useState(1);
+  const [gallery, setGallery] = useState([]);
+  const [showLoadMore, setShowLoadMore] = useState(true);
+  const [showLoader, setShowLoader] = useState(false);
+
+  const handleSubmit = req => {
+    if (req !== request) {
+      setRequest(req);
+      setPage(1);
+    }
+  };
+  const onHandleLoadMore = e => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    if (prevState.request !== this.state.request) {
-      this.setState({ gallery: [] });
+  useEffect(() => {
+    if (!request) {
+      return;
     }
-
-    if (
-      prevState.page !== this.state.page ||
-      prevState.request !== this.state.request
-    ) {
-      this.setState({ showLoader: true, error: null });
+    setShowLoader(true);
+    setError(null);
+    async function fetching() {
       try {
-        const response = await getResponse(this.state.request, this.state.page);
-
-        this.setState({
-          gallery: [...this.state.gallery, ...response],
-        });
+        const response = await getResponse(request, page);
+        setGallery(prevGallery => [...prevGallery, ...response]);
 
         if (response.length === 0) {
           throw new Error('error');
         }
         if (response.length < 12) {
-          this.setState({ showLoadMore: false });
+          setShowLoadMore(false);
         } else {
-          this.setState({ showLoadMore: true });
+          setShowLoadMore(true);
         }
       } catch (error) {
         toast.error('No images found for your request');
-        this.setState({ error: error, showLoader: false });
+        setError(error);
+        setShowLoader(false);
       } finally {
-        this.setState({ status: 'resolved', showLoader: false });
+        setStatus('resolved');
+        setShowLoader(false);
       }
     }
-  }
+    fetching();
+  }, [request, page]);
 
-  handleSubmit = request => {
-    if (request !== this.state.request) {
-      this.setState({ request: request, page: 1 });
-    }
-  };
+  useEffect(() => {
+    setGallery([]);
+  }, [request]);
 
-  onHandleLoadMore = e => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-
-  render() {
-    const { error, status, gallery, showLoadMore, showLoader } = this.state;
-    return (
-      <>
-        <Searchbar handleSubmit={this.handleSubmit} />
-        {status === 'resolved' && gallery.length !== 0 ? (
-          <>
-            <ul className="ImageGallery">
-              <GalleryItem
-                gallery={this.state.gallery}
-                toggleModal={this.props.toggleModal}
-              />
-            </ul>
-            {showLoadMore && (
-              <LoadMore onHandleLoadMore={this.onHandleLoadMore} />
-            )}
-          </>
-        ) : null}
-        {showLoader && <Loader />}
-        {error && <Error />}
-      </>
-    );
-  }
-}
+  return (
+    <>
+      <Searchbar handleSubmit={handleSubmit} />
+      {status === 'resolved' && gallery.length !== 0 ? (
+        <>
+          <ul className="ImageGallery">
+            <GalleryItem gallery={gallery} toggleModal={toggleModal} />
+          </ul>
+          {showLoadMore && <LoadMore onHandleLoadMore={onHandleLoadMore} />}
+        </>
+      ) : null}
+      {showLoader && <Loader />}
+      {error && <Error />}
+    </>
+  );
+};
 
 ImageGallery.propTypes = {
   toggleModal: PropTypes.func,
 };
-
-export { ImageGallery };
