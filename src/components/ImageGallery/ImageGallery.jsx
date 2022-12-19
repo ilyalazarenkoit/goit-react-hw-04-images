@@ -6,7 +6,7 @@ import { Loader } from '../Loader/Loader';
 import { Error } from 'components/Error/Error';
 import { getResponse } from '../../services/api';
 import { toast } from 'react-toastify';
-import { LoadMore } from 'components/Button/Button';
+import { Button } from 'components/Button/Button';
 import PropTypes from 'prop-types';
 
 export const ImageGallery = ({ toggleModal }) => {
@@ -20,6 +20,7 @@ export const ImageGallery = ({ toggleModal }) => {
 
   const handleSubmit = req => {
     if (req !== request) {
+      setGallery([]);
       setRequest(req);
       setPage(1);
     }
@@ -59,10 +60,6 @@ export const ImageGallery = ({ toggleModal }) => {
     fetching();
   }, [request, page]);
 
-  useEffect(() => {
-    setGallery([]);
-  }, [request]);
-
   return (
     <>
       <Searchbar handleSubmit={handleSubmit} />
@@ -71,7 +68,7 @@ export const ImageGallery = ({ toggleModal }) => {
           <ul className="ImageGallery">
             <GalleryItem gallery={gallery} toggleModal={toggleModal} />
           </ul>
-          {showLoadMore && <LoadMore onHandleLoadMore={onHandleLoadMore} />}
+          {showLoadMore && <Button onHandleLoadMore={onHandleLoadMore} />}
         </>
       ) : null}
       {showLoader && <Loader />}
